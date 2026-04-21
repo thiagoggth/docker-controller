@@ -1,4 +1,5 @@
 import { ContainerList } from '@gui/components/ContainerList/ContainerList';
+import { FilterBar } from '@gui/components/FilterBar/FilterBar';
 import { ThemeToggle } from '@gui/components/ThemeToggle/ThemeToggle';
 import { useContainerStore } from '@gui/stores/containerStore';
 import { useThemeStore } from '@gui/stores/themeStore';
@@ -9,6 +10,8 @@ export function ContainersScreen(): React.JSX.Element {
   const loading = useContainerStore((state) => state.loading);
   const error = useContainerStore((state) => state.error);
   const dockerAvailable = useContainerStore((state) => state.dockerAvailable);
+  const searchQuery = useContainerStore((state) => state.searchQuery);
+  const statusFilter = useContainerStore((state) => state.statusFilter);
   const fetchContainers = useContainerStore((state) => state.fetchContainers);
   const startContainer = useContainerStore((state) => state.startContainer);
   const stopContainer = useContainerStore((state) => state.stopContainer);
@@ -16,6 +19,21 @@ export function ContainersScreen(): React.JSX.Element {
 
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
+
+  const filteredContainers = containers.filter((c) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      c.name.toLowerCase().includes(q) ||
+      c.image.toLowerCase().includes(q) ||
+      c.id.toLowerCase().includes(q) ||
+      c.completeId.toLowerCase().includes(q);
+    const matchesStatus =
+      !statusFilter ||
+      c.status === statusFilter ||
+      (statusFilter === 'stopped' && c.status === 'die');
+    return matchesSearch && matchesStatus;
+  });
 
   useEffect(() => {
     fetchContainers();
@@ -83,11 +101,14 @@ export function ContainersScreen(): React.JSX.Element {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      <FilterBar />
+
       {/* Content Row */}
       <div className="flex flex-col gap-3 lg:flex-row">
         {/* Main Content */}
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          {loading && containers.length === 0 && (
+          {loading && filteredContainers.length === 0 && (
             <div className="flex justify-center py-8">
               <span className="loading loading-spinner loading-lg" />
             </div>
@@ -135,7 +156,7 @@ export function ContainersScreen(): React.JSX.Element {
 
           {!error && dockerAvailable && (
             <ContainerList
-              containers={containers}
+              containers={filteredContainers}
               onStart={startContainer}
               onStop={stopContainer}
             />

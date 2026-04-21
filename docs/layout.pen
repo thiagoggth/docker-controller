@@ -988,6 +988,110 @@
         },
         {
           "type": "frame",
+          "id": "fOKLA",
+          "name": "searchAndFilter",
+          "width": "fill_container",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "GlLS7",
+              "name": "searchInput",
+              "width": "fill_container",
+              "fill": "#F3F4F6",
+              "cornerRadius": 4,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#CBD5E1"
+              },
+              "gap": 8,
+              "padding": [
+                8,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "6gbJM",
+                  "name": "searchIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "search",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "fill": "#64748B"
+                },
+                {
+                  "type": "text",
+                  "id": "KF3hc",
+                  "name": "searchText",
+                  "fill": "#94A3B8",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Pesquisar por nome, imagem ou ID...",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "pPcbQ",
+              "name": "statusSelect",
+              "width": 160,
+              "fill": "#F3F4F6",
+              "cornerRadius": 4,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#CBD5E1"
+              },
+              "gap": 8,
+              "padding": [
+                8,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "CJ4Mq",
+                  "name": "filterIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "filter_list",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "fill": "#64748B"
+                },
+                {
+                  "type": "text",
+                  "id": "ukgb5",
+                  "name": "statusText",
+                  "fill": "#0F172A",
+                  "content": "Todos os status",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "yjG8g",
+                  "name": "chevronIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "arrow_drop_down",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "fill": "#64748B"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "6ZRsZ",
           "name": "contentRow",
           "width": "fill_container",
@@ -1523,6 +1627,110 @@
                   "fontFamily": "Inter",
                   "fontSize": 18,
                   "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "8QEmk",
+          "name": "darkSearchAndFilter",
+          "width": "fill_container",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "6RaI7",
+              "name": "darkSearchInput",
+              "width": "fill_container",
+              "fill": "#191E24",
+              "cornerRadius": 4,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#374151"
+              },
+              "gap": 8,
+              "padding": [
+                8,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "6ik9p",
+                  "name": "darkSearchIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "search",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "fill": "#94A3B8"
+                },
+                {
+                  "type": "text",
+                  "id": "rwgbJ",
+                  "name": "darkSearchText",
+                  "fill": "#6B7280",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Pesquisar por nome, imagem ou ID...",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "En0Np",
+              "name": "darkStatusSelect",
+              "width": 160,
+              "fill": "#191E24",
+              "cornerRadius": 4,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#374151"
+              },
+              "gap": 8,
+              "padding": [
+                8,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "9ryEj",
+                  "name": "darkFilterIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "filter_list",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "fill": "#94A3B8"
+                },
+                {
+                  "type": "text",
+                  "id": "qWPDX",
+                  "name": "darkStatusText",
+                  "fill": "#F9FAFB",
+                  "content": "Todos os status",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "a0mjA",
+                  "name": "darkChevronIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "arrow_drop_down",
+                  "iconFontFamily": "Material Symbols Outlined",
+                  "fill": "#94A3B8"
                 }
               ]
             }

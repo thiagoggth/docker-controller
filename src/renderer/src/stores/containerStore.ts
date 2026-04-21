@@ -9,10 +9,14 @@ interface ContainerState {
   loading: boolean;
   error: string | null;
   dockerAvailable: boolean;
+  searchQuery: string;
+  statusFilter: ContainerDtoStatus | null;
   fetchContainers: () => Promise<void>;
   startContainer: (id: string) => Promise<void>;
   stopContainer: (id: string) => Promise<void>;
   setDockerAvailable: (available: boolean) => void;
+  setSearchQuery: (query: string) => void;
+  setStatusFilter: (filter: ContainerDtoStatus | null) => void;
   subscribeToUpdates: () => () => void;
 }
 
@@ -32,6 +36,8 @@ export const useContainerStore = create<ContainerState>((set) => ({
   loading: false,
   error: null,
   dockerAvailable: true,
+  searchQuery: '',
+  statusFilter: null,
 
   fetchContainers: async () => {
     set({ loading: true, error: null });
@@ -86,6 +92,14 @@ export const useContainerStore = create<ContainerState>((set) => ({
 
   setDockerAvailable: (available: boolean) => {
     set({ dockerAvailable: available });
+  },
+
+  setSearchQuery: (query: string) => {
+    set({ searchQuery: query });
+  },
+
+  setStatusFilter: (filter: ContainerDtoStatus | null) => {
+    set({ statusFilter: filter });
   },
 
   subscribeToUpdates: () => {

@@ -1,33 +1,35 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
+  themes:
+    light --default,
+    dark --prefersdark;
 }
 
 @plugin "daisyui/theme" {
-  name: "light";
+  name: 'light';
   default: true;
   prefersdark: false;
   color-scheme: light;
 
-  --color-base-100: #FFFFFF;
-  --color-base-200: #F3F4F6;
-  --color-base-300: #E5E7EB;
+  --color-base-100: #ffffff;
+  --color-base-200: #f3f4f6;
+  --color-base-300: #e5e7eb;
   --color-base-content: #111827;
-  --color-primary: #570DF8;
-  --color-primary-content: #FFFFFF;
-  --color-secondary: #D946EF;
-  --color-secondary-content: #FFFFFF;
-  --color-accent: #37CDBE;
+  --color-primary: #570df8;
+  --color-primary-content: #ffffff;
+  --color-secondary: #d946ef;
+  --color-secondary-content: #ffffff;
+  --color-accent: #37cdbe;
   --color-accent-content: #111827;
-  --color-neutral: #2A323C;
-  --color-neutral-content: #FFFFFF;
-  --color-info: #3ABFF8;
+  --color-neutral: #2a323c;
+  --color-neutral-content: #ffffff;
+  --color-info: #3abff8;
   --color-info-content: #111827;
-  --color-success: #36D399;
+  --color-success: #36d399;
   --color-success-content: #111827;
-  --color-warning: #FBBD23;
+  --color-warning: #fbbd23;
   --color-warning-content: #111827;
-  --color-error: #F87272;
+  --color-error: #f87272;
   --color-error-content: #111827;
 
   --radius-selector: 0.5rem;
@@ -43,30 +45,30 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "dark";
+  name: 'dark';
   default: false;
   prefersdark: true;
   color-scheme: dark;
 
-  --color-base-100: #1D232A;
-  --color-base-200: #191E24;
-  --color-base-300: #15191E;
-  --color-base-content: #A6ADBB;
-  --color-primary: #661AE6;
-  --color-primary-content: #FFFFFF;
-  --color-secondary: #D926A9;
-  --color-secondary-content: #FFFFFF;
-  --color-accent: #1FB2A5;
+  --color-base-100: #1d232a;
+  --color-base-200: #191e24;
+  --color-base-300: #15191e;
+  --color-base-content: #a6adbb;
+  --color-primary: #661ae6;
+  --color-primary-content: #ffffff;
+  --color-secondary: #d926a9;
+  --color-secondary-content: #ffffff;
+  --color-accent: #1fb2a5;
   --color-accent-content: #111827;
-  --color-neutral: #2A323C;
-  --color-neutral-content: #FFFFFF;
-  --color-info: #3ABFF8;
+  --color-neutral: #2a323c;
+  --color-neutral-content: #ffffff;
+  --color-info: #3abff8;
   --color-info-content: #111827;
-  --color-success: #36D399;
+  --color-success: #36d399;
   --color-success-content: #111827;
-  --color-warning: #FBBD23;
+  --color-warning: #fbbd23;
   --color-warning-content: #111827;
-  --color-error: #F87272;
+  --color-error: #f87272;
   --color-error-content: #111827;
 
   --radius-selector: 0.5rem;
@@ -82,5 +84,9 @@
 }
 
 body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
