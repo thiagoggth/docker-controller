@@ -36,9 +36,17 @@ export const useContainerStore = create<ContainerState>((set) => ({
   fetchContainers: async () => {
     set({ loading: true, error: null });
     try {
+      const pingResult = window.api.sendSync<{ available: boolean }>(E_IPCChannels.DOCKER_PING, {});
+      set({ dockerAvailable: pingResult.data.available });
+
+      if (!pingResult.data.available) {
+        set({ loading: false, error: 'Docker daemon is unavailable' });
+        return;
+      }
+
       const containers = window.api.sendSync<ContainerDTO[]>(E_IPCChannels.CONTAINERS_LIST, {});
 
-      set({ containers: containers.data, loading: false, dockerAvailable: true });
+      set({ containers: containers.data, loading: false });
     } catch (error) {
       if (error instanceof ApiSendError) {
         console.error('Error fetching containers:', error.stack);

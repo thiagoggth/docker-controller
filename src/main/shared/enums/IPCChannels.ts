@@ -4,6 +4,7 @@ export enum E_IPCChannels {
   CONTAINERS_STOP = 'containers:stop',
   SETTINGS_AUTO_RELOAD_SET = 'settings:autoReload:set',
   SETTINGS_AUTO_RELOAD_GET = 'settings:autoReload:get',
+  DOCKER_PING = 'docker:ping',
 }
 
 export enum E_OnIPCChannels {

@@ -4,11 +4,14 @@ import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { DockerodeService } from './data/services/DockerodeService';
 import { containerControllerFactory } from './factories/controllers/containerControllerFactory';
+import { dockerControllerFactory } from './factories/controllers/dockerControllerFactory';
 import { E_OnIPCChannels } from './shared/enums/IPCChannels';
 import { ContainerAction } from './shared/types/EventDockerTypes';
 
 export class App {
   public static mainWindow: BrowserWindow | null = null;
+  private dockerService = new DockerodeService();
+
   public start(): void {
     app
       .on('ready', this.createWindow)
@@ -29,7 +32,6 @@ export class App {
   }
 
   private createWindow(): void {
-    // Create the browser window.
     App.mainWindow = new BrowserWindow({
       width: 900,
       height: 670,
@@ -51,23 +53,39 @@ export class App {
       return { action: 'deny' };
     });
 
-    // HMR for renderer base on electron-vite cli.
-    // Load the remote URL for development or the local html file for production.
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
       App.mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
     } else {
       App.mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
     }
-
-    // Open the DevTools.
-    // App.mainWindow.webContents.openDevTools();
   }
 
   private registerEvents(): void {
-    containerControllerFactory().register();
-    const service = new DockerodeService();
-    service.connect();
-    service.onContainerEvent(
+    containerControllerFactory(this.dockerService).register();
+    dockerControllerFactory(this.dockerService).register();
+
+    this.dockerService.connect().catch(() => {});
+
+    if (this.dockerService.isConnected()) {
+      this.startEventStreaming();
+    }
+
+    setInterval(async () => {
+      if (!this.dockerService.isConnected()) {
+        try {
+          await this.dockerService.connect();
+          if (this.dockerService.isConnected()) {
+            this.startEventStreaming();
+          }
+        } catch {
+          // silently ignore, next interval will retry
+        }
+      }
+    }, 5000);
+  }
+
+  private startEventStreaming(): void {
+    this.dockerService.onContainerEvent(
       [ContainerAction.START, ContainerAction.STOP, ContainerAction.DIE],
       (event) => {
         App.mainWindow?.webContents.send(E_OnIPCChannels.CONTAINERS_UPDATED, event);
