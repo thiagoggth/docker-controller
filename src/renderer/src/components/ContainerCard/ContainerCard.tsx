@@ -1,5 +1,5 @@
-import React from 'react';
 import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
+import React from 'react';
 
 interface ContainerCardProps {
   container: ContainerDTO;
@@ -12,49 +12,52 @@ export function ContainerCard({
   onStart,
   onStop,
 }: ContainerCardProps): React.JSX.Element {
-  const shortId = container.id.substring(0, 12);
+  const shortId = container.id.substring(0, 8);
   const isRunning = container.status === 'running';
 
   return (
-    <div className={`card shadow-md ${isRunning ? 'bg-base-100' : 'bg-base-200'}`}>
-      <div className="card-body p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-3 h-3 rounded-full ${isRunning ? 'bg-success' : 'bg-base-content/30'}`}
-              data-testid="status-indicator"
-            />
-            <h3 className="card-title text-lg">{container.name}</h3>
-          </div>
-          <button
-            className={`btn btn-sm ${isRunning ? 'btn-error' : 'btn-success'}`}
-            onClick={() => (isRunning ? onStop(container.id) : onStart(container.id))}
-            data-testid="action-button"
-          >
-            {isRunning ? 'Stop' : 'Start'}
-          </button>
+    <div
+      className="flex items-center gap-3 rounded border border-base-300 bg-base-200 p-3"
+      data-testid="container-card"
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <div
+            className={`h-2 w-2 shrink-0 rounded-full ${isRunning ? 'bg-success' : 'bg-error'}`}
+            data-testid="status-indicator"
+          />
+          <span className="truncate text-sm font-semibold text-base-content">{container.name}</span>
         </div>
-
-        <div className="text-sm opacity-70 mt-1">
-          <span className="font-mono">{shortId}</span>
-          <span className="mx-2">•</span>
-          <span>{container.image}</span>
+        <span className="truncate text-xs text-base-content/70">{container.image}</span>
+        <div className="flex flex-wrap items-center gap-x-2 text-xs text-base-content/60">
+          <span>ID {shortId}</span>
+          {container.ports.length > 0 && (
+            <>
+              <span>·</span>
+              <span>Portas {container.ports.join(', ')}</span>
+            </>
+          )}
+          {isRunning && container.uptime && (
+            <>
+              <span>·</span>
+              <span>Tempo ativo {container.uptime}</span>
+            </>
+          )}
+          {!isRunning && <span>·</span>}
+          {!isRunning && <span>Pronto para iniciar</span>}
         </div>
-
-        {container.ports.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {container.ports.map((port, index) => (
-              <span key={index} className="badge badge-outline badge-sm">
-                {port}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {isRunning && container.uptime && (
-          <div className="text-xs opacity-60 mt-1">Uptime: {container.uptime}</div>
-        )}
       </div>
+      <button
+        className={`shrink-0 rounded px-2.5 py-1 text-xs font-semibold cursor-pointer transition-colors ${
+          isRunning
+            ? 'bg-error text-white hover:bg-error/80'
+            : 'border border-success text-success hover:bg-success/10'
+        }`}
+        onClick={() => (isRunning ? onStop(container.id) : onStart(container.id))}
+        data-testid="action-button"
+      >
+        {isRunning ? 'Parar' : 'Iniciar'}
+      </button>
     </div>
   );
 }

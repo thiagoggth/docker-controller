@@ -1,2 +1,86 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #FFFFFF;
+  --color-base-200: #F3F4F6;
+  --color-base-300: #E5E7EB;
+  --color-base-content: #111827;
+  --color-primary: #570DF8;
+  --color-primary-content: #FFFFFF;
+  --color-secondary: #D946EF;
+  --color-secondary-content: #FFFFFF;
+  --color-accent: #37CDBE;
+  --color-accent-content: #111827;
+  --color-neutral: #2A323C;
+  --color-neutral-content: #FFFFFF;
+  --color-info: #3ABFF8;
+  --color-info-content: #111827;
+  --color-success: #36D399;
+  --color-success-content: #111827;
+  --color-warning: #FBBD23;
+  --color-warning-content: #111827;
+  --color-error: #F87272;
+  --color-error-content: #111827;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.25rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #1D232A;
+  --color-base-200: #191E24;
+  --color-base-300: #15191E;
+  --color-base-content: #A6ADBB;
+  --color-primary: #661AE6;
+  --color-primary-content: #FFFFFF;
+  --color-secondary: #D926A9;
+  --color-secondary-content: #FFFFFF;
+  --color-accent: #1FB2A5;
+  --color-accent-content: #111827;
+  --color-neutral: #2A323C;
+  --color-neutral-content: #FFFFFF;
+  --color-info: #3ABFF8;
+  --color-info-content: #111827;
+  --color-success: #36D399;
+  --color-success-content: #111827;
+  --color-warning: #FBBD23;
+  --color-warning-content: #111827;
+  --color-error: #F87272;
+  --color-error-content: #111827;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.25rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}

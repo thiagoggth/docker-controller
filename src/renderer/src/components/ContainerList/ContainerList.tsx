@@ -17,48 +17,16 @@ export function ContainerList({
   const stopped = containers.filter((c) => c.status === 'stopped' || c.status === 'die');
 
   return (
-    <div className="space-y-6">
-      {running.length > 0 && (
-        <section>
-          <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-success" />
-            Running ({running.length})
-          </h2>
-          <div className="space-y-3">
-            {running.map((container) => (
-              <ContainerCard
-                key={container.id}
-                container={container}
-                onStart={onStart}
-                onStop={onStop}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {stopped.length > 0 && (
-        <section>
-          <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-base-content/30" />
-            Stopped ({stopped.length})
-          </h2>
-          <div className="space-y-3">
-            {stopped.map((container) => (
-              <ContainerCard
-                key={container.id}
-                container={container}
-                onStart={onStart}
-                onStop={onStop}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
+    <div className="flex flex-col gap-2">
+      {running.map((container) => (
+        <ContainerCard key={container.id} container={container} onStart={onStart} onStop={onStop} />
+      ))}
+      {stopped.map((container) => (
+        <ContainerCard key={container.id} container={container} onStart={onStart} onStop={onStop} />
+      ))}
       {containers.length === 0 && (
-        <div className="text-center py-8 opacity-60">
-          <p>No containers found</p>
+        <div className="rounded border border-base-300 bg-base-200 p-6 text-center">
+          <p className="text-sm text-base-content/60">Nenhum contêiner encontrado</p>
         </div>
       )}
     </div>
