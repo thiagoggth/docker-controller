@@ -1,23 +1,25 @@
 import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
-import { Result } from '@core/shared/types/Result';
+import { ApiResult } from '@core/shared/types/ApiTypes';
+import { E_IPCChannels } from '@core/shared/enums/IPCChannels';
 
 export const containerService = {
   list: async (): Promise<ContainerDTO[]> => {
     try {
-      return await window.api.containers.list();
+      const result = window.api.sendSync<ContainerDTO[]>(E_IPCChannels.CONTAINERS_LIST, {});
+      return result.data;
     } catch (error) {
       throw new Error(error instanceof Error ? error.message : 'Failed to fetch containers');
     }
   },
 
-  start: async (id: string): Promise<Result<void>> => {
+  start: async (id: string): Promise<ApiResult<void>> => {
     try {
-      return await window.api.containers.start(id);
+      return window.api.sendSync<void>(E_IPCChannels.CONTAINERS_START, { id });
     } catch (error) {
       return {
         data: undefined as never,
         success: false,
-        error: [
+        errors: [
           {
             propName: 'container',
             message: error instanceof Error ? error.message : 'Failed to start container',
@@ -28,14 +30,14 @@ export const containerService = {
     }
   },
 
-  stop: async (id: string): Promise<Result<void>> => {
+  stop: async (id: string): Promise<ApiResult<void>> => {
     try {
-      return await window.api.containers.stop(id);
+      return window.api.sendSync<void>(E_IPCChannels.CONTAINERS_STOP, { id });
     } catch (error) {
       return {
         data: undefined as never,
         success: false,
-        error: [
+        errors: [
           {
             propName: 'container',
             message: error instanceof Error ? error.message : 'Failed to stop container',

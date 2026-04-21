@@ -1,5 +1,5 @@
 import React from 'react';
-import { Report } from '@core/shared/types/Result';
+import { Report } from '@core/shared/types/ApiTypes';
 
 interface ErrorBannerProps {
   message: string;
