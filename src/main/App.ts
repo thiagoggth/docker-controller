@@ -33,7 +33,7 @@ export class App {
 
   private createWindow(): void {
     App.mainWindow = new BrowserWindow({
-      width: 900,
+      width: 1100,
       height: 670,
       show: false,
       autoHideMenuBar: true,
