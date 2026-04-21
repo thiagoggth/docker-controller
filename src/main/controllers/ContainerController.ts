@@ -1,9 +1,9 @@
 import { ListContainersUseCase } from '@core/application/use-cases/ListContainersUseCase';
 import { StartContainerUseCase } from '@core/application/use-cases/StartContainerUseCase';
 import { StopContainerUseCase } from '@core/application/use-cases/StopContainerUseCase';
+import { E_IPCChannels } from '../shared/enums/IPCChannels';
 import { EventAdapter } from './infra/EventAdapter';
 import { EventListener } from './infra/EventListener';
-import { IPCChannels } from './ipc-channels';
 
 export class ContainerController {
   private eventListener = new EventListener();
@@ -19,7 +19,7 @@ export class ContainerController {
 
   private listContainers(): ContainerController {
     this.eventListener.on(
-      IPCChannels.CONTAINERS_LIST,
+      E_IPCChannels.CONTAINERS_LIST,
       EventAdapter.ExecuteEvent(this.listUseCase, 'Containers listados com sucesso'),
     );
     return this;
@@ -27,7 +27,7 @@ export class ContainerController {
 
   private startContainer(): ContainerController {
     this.eventListener.on(
-      IPCChannels.CONTAINERS_START,
+      E_IPCChannels.CONTAINERS_START,
       EventAdapter.ExecuteEvent(this.startUseCase, 'Container iniciado com sucesso'),
     );
     return this;
@@ -35,7 +35,7 @@ export class ContainerController {
 
   private stopContainer(): ContainerController {
     this.eventListener.on(
-      IPCChannels.CONTAINERS_STOP,
+      E_IPCChannels.CONTAINERS_STOP,
       EventAdapter.ExecuteEvent(this.stopUseCase, 'Container parado com sucesso'),
     );
     return this;

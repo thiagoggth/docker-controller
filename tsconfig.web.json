@@ -3,20 +3,18 @@
   "include": [
     "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
+    "src/main/shared/**/*",
+    "src/main/domain/**/*",
     "src/renderer/src/**/*.tsx",
     "src/preload/*.d.ts"
   ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "@renderer/*": [
-        "src/renderer/src/*"
-      ],
-      "@core/*": ["src/core/*"],
-      "@gui/*": ["src/gui/*"],
-      "@preload/*": ["src/preload/*"]
+      "@core/*": ["./src/main/*"],
+      "@gui/*": ["./src/renderer/src/*"],
+      "@preload/*": ["./src/preload/*"]
     }
   }
 }

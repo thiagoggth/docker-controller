@@ -1,1 +1,1 @@
-export type ContainerStatus = 'running' | 'stopped';
+export type ContainerStatus = 'running' | 'stopped' | 'die';

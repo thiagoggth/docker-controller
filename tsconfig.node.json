@@ -5,7 +5,7 @@
     "composite": true,
     "paths": {
       "@core/*": ["./src/main/*"],
-      "@gui/*": ["./src/gui/*"],
+      "@gui/*": ["./src/renderer/src/*"],
       "@preload/*": ["./src/preload/*"]
     },
     "types": ["electron-vite/node"]

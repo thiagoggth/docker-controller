@@ -1,8 +1,10 @@
+export type ContainerDtoStatus = 'running' | 'stopped' | 'die';
 export interface ContainerDTO {
   id: string;
+  completeId: string;
   name: string;
   image: string;
-  status: 'running' | 'stopped';
+  status: ContainerDtoStatus;
   ports: string[];
   uptime: string | null;
 }

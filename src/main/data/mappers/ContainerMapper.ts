@@ -6,18 +6,20 @@ import Dockerode from 'dockerode';
 export class ContainerMapper {
   toDomain(containerInfo: Dockerode.ContainerInfo): Container {
     const id = containerInfo.Id.substring(0, 12);
+    const completeId = containerInfo.Id;
     const name = this.extractName(containerInfo.Names);
     const image = containerInfo.Image;
     const status = this.mapStatus(containerInfo.State);
     const ports = this.extractPorts(containerInfo.Ports);
     const createdAt = new Date(containerInfo.Created * 1000);
 
-    return new Container(id, name, image, status, ports, createdAt);
+    return new Container(id, completeId, name, image, status, ports, createdAt);
   }
 
   toDTO(container: Container): ContainerDTO {
     return {
       id: container.id,
+      completeId: container.completeId,
       name: container.name,
       image: container.image,
       status: container.status,

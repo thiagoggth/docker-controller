@@ -3,6 +3,7 @@ import { ContainerStatus } from './ContainerStatus';
 export class Container {
   constructor(
     public readonly id: string,
+    public readonly completeId: string,
     public readonly name: string,
     public readonly image: string,
     public readonly status: ContainerStatus,

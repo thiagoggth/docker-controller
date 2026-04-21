@@ -2,7 +2,10 @@ import { is } from '@electron-toolkit/utils';
 import { app, BrowserWindow, shell } from 'electron';
 import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
+import { DockerodeService } from './data/services/DockerodeService';
 import { containerControllerFactory } from './factories/controllers/containerControllerFactory';
+import { E_OnIPCChannels } from './shared/enums/IPCChannels';
+import { ContainerAction } from './shared/types/EventDockerTypes';
 
 export class App {
   public static mainWindow: BrowserWindow | null = null;
@@ -62,5 +65,13 @@ export class App {
 
   private registerEvents(): void {
     containerControllerFactory().register();
+    const service = new DockerodeService();
+    service.connect();
+    service.onContainerEvent(
+      [ContainerAction.START, ContainerAction.STOP, ContainerAction.DIE],
+      (event) => {
+        App.mainWindow?.webContents.send(E_OnIPCChannels.CONTAINERS_UPDATED, event);
+      },
+    );
   }
 }

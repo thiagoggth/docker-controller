@@ -1,15 +1,17 @@
 import { IContainerRepository } from '@core/application/repositories/IContainerRepository';
+import { ContainerMapper } from '@core/data/mappers/ContainerMapper';
+import { DockerodeService } from '@core/data/services/DockerodeService';
 import { Container } from '@core/domain/entities/Container';
 import { ContainerNotFoundError } from '@core/domain/errors/ContainerNotFoundError';
 import { DockerDaemonUnavailableError } from '@core/domain/errors/DockerDaemonUnavailableError';
-import { ContainerMapper } from '@core/data/mappers/ContainerMapper';
-import { DockerodeService } from '@core/data/services/DockerodeService';
 
 export class DockerodeContainerRepository implements IContainerRepository {
   constructor(
     private readonly dockerodeService: DockerodeService,
     private readonly mapper: ContainerMapper = new ContainerMapper(),
-  ) {}
+  ) {
+    this.dockerodeService.connect();
+  }
 
   async listAll(): Promise<Container[]> {
     try {
