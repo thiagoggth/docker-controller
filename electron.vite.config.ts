@@ -6,11 +6,15 @@ import { resolve } from 'path';
 export default defineConfig({
   main: {
     resolve: {
+      external: ['dockerode'],
       alias: {
         '@core': resolve(__dirname, 'src/main'),
         '@gui': resolve(__dirname, 'src/renderer/src'),
         '@preload': resolve(__dirname, 'src/preload'),
       },
+    },
+    optimizeDeps: {
+      include: ['dockerode'],
     },
   },
   preload: {

@@ -59,6 +59,7 @@
       "electron",
       "esbuild",
       "protobufjs",
+      "dockerode",
       "ssh2"
     ],
     "ignoredBuiltDependencies": [
