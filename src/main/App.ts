@@ -7,22 +7,26 @@ import { containerControllerFactory } from './factories/controllers/containerCon
 import { dockerControllerFactory } from './factories/controllers/dockerControllerFactory';
 import { E_OnIPCChannels } from './shared/enums/IPCChannels';
 import { ContainerAction } from './shared/types/EventDockerTypes';
+import { TrayService } from './services/TrayService';
 
 export class App {
   public static mainWindow: BrowserWindow | null = null;
   private dockerService = new DockerodeService();
+  private trayService!: TrayService;
 
   public start(): void {
+    this.trayService = new TrayService(() => this.createWindow());
     app
-      .on('ready', this.createWindow)
+      .on('ready', () => {
+        this.createWindow();
+        this.trayService.createTray();
+      })
       .whenReady()
       .then(() => {
         this.registerEvents();
       });
     app.on('window-all-closed', () => {
-      if (process.platform !== 'darwin') {
-        app.quit();
-      }
+      // App stays running in system tray
     });
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
@@ -42,6 +46,12 @@ export class App {
         preload: join(__dirname, '../preload/index.js'),
         sandbox: false,
       },
+    });
+
+    App.mainWindow.on('close', (event) => {
+      event.preventDefault();
+      App.mainWindow?.destroy();
+      App.mainWindow = null;
     });
 
     App.mainWindow.on('ready-to-show', () => {
