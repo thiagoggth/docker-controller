@@ -9,6 +9,9 @@ export class Container {
     public readonly status: ContainerStatus,
     public readonly ports: string[],
     public readonly createdAt: Date,
+    public readonly composeProject: string | null = null,
+    public readonly composeConfigPath: string | null = null,
+    public readonly composeService: string | null = null,
   ) {}
 
   get uptime(): string | null {

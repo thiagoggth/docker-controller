@@ -18,6 +18,17 @@ const api: IApi = {
     return response;
   },
 
+  invoke: async <T = any>(channel: E_IPCChannels, data?: any): Promise<ApiResult<T>> => {
+    const response: ApiResult<T> = await ipcRenderer.invoke(channel, data);
+    if (response.success === false) {
+      throw new ApiSendError(
+        response.message || 'Unknown error from main process',
+        response.errors,
+      );
+    }
+    return response;
+  },
+
   on: <T = any>(channel: E_OnIPCChannels, callback: (data: T) => void) => {
     const fn = (_, data) => callback(data);
     ipcRenderer.on(channel, fn);

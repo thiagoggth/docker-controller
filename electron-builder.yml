@@ -1,5 +1,6 @@
 appId: com.electron.app
 productName: docker-interface-controller
+electronUpdaterCompatibility: '>=2.16'
 directories:
   buildResources: build
 files:
@@ -12,6 +13,8 @@ files:
 asarUnpack:
   - resources/**
 win:
+  target:
+    - nsis
   executableName: docker-interface-controller
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -39,7 +42,10 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: ${env.GH_OWNER}
+  repo: ${env.GH_REPO}
+  releaseType: release
+  vPrefixedTagName: true
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

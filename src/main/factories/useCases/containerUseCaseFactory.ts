@@ -1,4 +1,5 @@
 import { ListContainersUseCase } from '@core/application/use-cases/ListContainersUseCase';
+import { OpenComposeFolderUseCase } from '@core/application/use-cases/OpenComposeFolderUseCase';
 import { StartContainerUseCase } from '@core/application/use-cases/StartContainerUseCase';
 import { StopContainerUseCase } from '@core/application/use-cases/StopContainerUseCase';
 import { ContainerMapper } from '@core/data/mappers/ContainerMapper';
@@ -10,10 +11,12 @@ export const containerUseCaseFactory = (dockerService: DockerodeService) => {
   const listContainersUseCase = new ListContainersUseCase(repository);
   const startContainerUseCase = new StartContainerUseCase(repository);
   const stopContainerUseCase = new StopContainerUseCase(repository);
+  const openComposeFolderUseCase = new OpenComposeFolderUseCase();
 
   return {
     listContainersUseCase,
     startContainerUseCase,
     stopContainerUseCase,
+    openComposeFolderUseCase,
   };
 };

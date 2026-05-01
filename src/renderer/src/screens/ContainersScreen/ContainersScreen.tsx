@@ -1,9 +1,11 @@
 import { ContainerList } from '@gui/components/ContainerList/ContainerList';
 import { FilterBar } from '@gui/components/FilterBar/FilterBar';
 import { ThemeToggle } from '@gui/components/ThemeToggle/ThemeToggle';
+import { UpdateBanner } from '@gui/components/UpdateBanner/UpdateBanner';
 import { useContainerStore } from '@gui/stores/containerStore';
 import { useThemeStore } from '@gui/stores/themeStore';
-import React, { useEffect } from 'react';
+import { useUpdateStore } from '@gui/stores/updateStore';
+import React, { useEffect, useState } from 'react';
 
 export function ContainersScreen(): React.JSX.Element {
   const containers = useContainerStore((state) => state.containers);
@@ -15,10 +17,15 @@ export function ContainersScreen(): React.JSX.Element {
   const fetchContainers = useContainerStore((state) => state.fetchContainers);
   const startContainer = useContainerStore((state) => state.startContainer);
   const stopContainer = useContainerStore((state) => state.stopContainer);
+  const openComposeFolder = useContainerStore((state) => state.openComposeFolder);
   const subscribeToUpdates = useContainerStore((state) => state.subscribeToUpdates);
 
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const updateState = useUpdateStore((state) => state.updateState);
+  const downloadUpdate = useUpdateStore((state) => state.downloadUpdate);
+  const installUpdate = useUpdateStore((state) => state.installUpdate);
+  const [updateRequestInFlight, setUpdateRequestInFlight] = useState(false);
 
   const filteredContainers = containers.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -47,6 +54,20 @@ export function ContainersScreen(): React.JSX.Element {
     fetchContainers();
   };
 
+  const handleDownloadUpdate = () => {
+    setUpdateRequestInFlight(true);
+    void downloadUpdate().finally(() => {
+      setUpdateRequestInFlight(false);
+    });
+  };
+
+  const handleInstallUpdate = () => {
+    setUpdateRequestInFlight(true);
+    void installUpdate().finally(() => {
+      setUpdateRequestInFlight(false);
+    });
+  };
+
   const runningCount = containers.filter((c) => c.status === 'running').length;
   const stoppedCount = containers.filter(
     (c) => c.status === 'stopped' || c.status === 'die',
@@ -63,7 +84,7 @@ export function ContainersScreen(): React.JSX.Element {
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
-            className="flex items-center cursor-pointer gap-1.5 rounded bg-base-200 px-2.5 py-2 text-primary border border-base-300 transition-colors hover:bg-base-300"
+            className="flex cursor-pointer items-center gap-1.5 rounded border bg-base-200 px-2.5 py-2 text-primary transition-colors hover:bg-base-300"
             data-testid="refresh-button"
             title="Recarregar"
           >
@@ -86,16 +107,23 @@ export function ContainersScreen(): React.JSX.Element {
       </div>
 
       {/* Stats Row */}
+      <UpdateBanner
+        updateState={updateState}
+        requestInFlight={updateRequestInFlight}
+        onDownload={handleDownloadUpdate}
+        onInstall={handleInstallUpdate}
+      />
+
       <div className="grid grid-cols-3 gap-3">
-        <div className="flex flex-col gap-1.5 rounded border border-base-300 bg-base-200 p-3.5">
+        <div className="flex flex-col gap-1.5 rounded border bg-base-200 p-3.5">
           <span className="text-xs font-semibold text-base-content/60">Total</span>
           <span className="text-lg font-semibold text-base-content">{totalCount} contêineres</span>
         </div>
-        <div className="flex flex-col gap-1.5 rounded border border-base-300 bg-base-200 p-3.5">
+        <div className="flex flex-col gap-1.5 rounded border bg-base-200 p-3.5">
           <span className="text-xs font-semibold text-base-content/60">Rodando</span>
           <span className="text-lg font-semibold text-base-content">{runningCount}</span>
         </div>
-        <div className="flex flex-col gap-1.5 rounded border border-base-300 bg-base-200 p-3.5">
+        <div className="flex flex-col gap-1.5 rounded border bg-base-200 p-3.5">
           <span className="text-xs font-semibold text-base-content/60">Parados</span>
           <span className="text-lg font-semibold text-base-content">{stoppedCount}</span>
         </div>
@@ -116,7 +144,7 @@ export function ContainersScreen(): React.JSX.Element {
 
           {error && !dockerAvailable && (
             <div className="flex flex-col gap-2">
-              <div className="flex flex-col gap-1.5 rounded border border-base-300 bg-base-200 p-3.5">
+              <div className="flex flex-col gap-1.5 rounded border bg-base-200 p-3.5">
                 <span className="text-sm font-semibold text-base-content">Docker indisponível</span>
                 <p className="text-xs text-base-content/70">
                   Inicie o Docker antes de abrir a lista de contêineres.
@@ -159,47 +187,21 @@ export function ContainersScreen(): React.JSX.Element {
               containers={filteredContainers}
               onStart={startContainer}
               onStop={stopContainer}
+              onOpenComposeFolder={openComposeFolder}
             />
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="flex w-full flex-col gap-3 lg:w-1/3 lg:max-w-xs">
-          {/* Connection Status Card */}
-          <div
-            className={`flex items-center gap-3 rounded border border-base-300 p-3 ${
-              dockerAvailable ? 'bg-base-200' : 'bg-base-300/50'
-            }`}
-          >
-            <div
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                dockerAvailable ? 'bg-success' : 'bg-error'
-              }`}
-            />
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span
-                className={`text-xs font-semibold ${
-                  dockerAvailable ? 'text-success' : 'text-error'
-                }`}
-              >
-                {dockerAvailable ? 'Disponível' : 'Indisponível'}
-              </span>
-              {!dockerAvailable && (
-                <span className="text-xs text-base-content/60">Aguardando o daemon responder.</span>
-              )}
-            </div>
-          </div>
-
-          {/* Offline tip card */}
-          {!dockerAvailable && (
-            <div className="flex flex-col gap-1.5 rounded border border-base-300 bg-base-200 p-3">
+        {!dockerAvailable && (
+          <div className="flex w-full flex-col gap-3 lg:w-1/3 lg:max-w-xs">
+            <div className="flex flex-col gap-1.5 rounded border bg-base-200 p-3">
               <span className="text-sm font-semibold text-base-content">Dica rápida</span>
               <p className="text-xs text-base-content/70">
                 Depois de iniciar o Docker, clique em recarregar para atualizar a lista.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

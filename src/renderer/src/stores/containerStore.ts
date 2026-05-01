@@ -14,6 +14,7 @@ interface ContainerState {
   fetchContainers: () => Promise<void>;
   startContainer: (id: string) => Promise<void>;
   stopContainer: (id: string) => Promise<void>;
+  openComposeFolder: (path: string) => Promise<void>;
   setDockerAvailable: (available: boolean) => void;
   setSearchQuery: (query: string) => void;
   setStatusFilter: (filter: ContainerDtoStatus | null) => void;
@@ -71,22 +72,33 @@ export const useContainerStore = create<ContainerState>((set) => ({
   },
 
   startContainer: async (id: string) => {
-    const result = window.api.sendSync<{ success: boolean; message?: string }>(
-      E_IPCChannels.CONTAINERS_START,
-      { id },
-    );
-    if (!result.success) {
-      set({ error: result.message });
+    try {
+      window.api.sendSync<void>(E_IPCChannels.CONTAINERS_START, { id });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start container';
+      set({ error: errorMessage });
+      throw error;
     }
   },
 
   stopContainer: async (id: string) => {
-    const result = window.api.sendSync<{ success: boolean; message?: string }>(
-      E_IPCChannels.CONTAINERS_STOP,
-      { id },
-    );
-    if (!result.success) {
-      set({ error: result.message });
+    try {
+      window.api.sendSync<void>(E_IPCChannels.CONTAINERS_STOP, { id });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to stop container';
+      set({ error: errorMessage });
+      throw error;
+    }
+  },
+
+  openComposeFolder: async (path: string) => {
+    try {
+      window.api.sendSync<void>(E_IPCChannels.CONTAINERS_OPEN_COMPOSE_FOLDER, { path });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to open compose folder';
+      set({ error: errorMessage });
+      throw error;
     }
   },
 

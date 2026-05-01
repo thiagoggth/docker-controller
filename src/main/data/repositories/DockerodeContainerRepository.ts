@@ -17,7 +17,16 @@ export class DockerodeContainerRepository implements IContainerRepository {
     try {
       const docker = this.dockerodeService.getDocker();
       const containers = await docker.listContainers({ all: true });
-      return containers.map((c) => this.mapper.toDomain(c));
+      return await Promise.all(
+        containers.map(async (containerInfo) => {
+          if (containerInfo.Ports.length > 0) {
+            return this.mapper.toDomain(containerInfo);
+          }
+
+          const inspectInfo = await docker.getContainer(containerInfo.Id).inspect();
+          return this.mapper.toDomain(containerInfo, inspectInfo);
+        }),
+      );
     } catch (error) {
       if (error instanceof DockerDaemonUnavailableError) {
         throw error;

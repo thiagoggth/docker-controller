@@ -6,7 +6,7 @@ export function SearchBar(): React.JSX.Element {
   const setSearchQuery = useContainerStore((state) => state.setSearchQuery);
 
   return (
-    <div className="flex flex-1 items-center gap-2 rounded border border-base-300 bg-base-200 px-3 py-2">
+    <div className="flex flex-1 items-center gap-2 rounded border bg-base-200 px-3 py-2">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="h-4 w-4 shrink-0 text-base-content/50"

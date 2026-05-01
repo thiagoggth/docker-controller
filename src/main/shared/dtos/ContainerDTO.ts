@@ -7,4 +7,7 @@ export interface ContainerDTO {
   status: ContainerDtoStatus;
   ports: string[];
   uptime: string | null;
+  composeProject: string | null;
+  composeConfigPath: string | null;
+  composeService: string | null;
 }

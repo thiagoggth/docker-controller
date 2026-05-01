@@ -7,12 +7,14 @@ import { containerControllerFactory } from './factories/controllers/containerCon
 import { dockerControllerFactory } from './factories/controllers/dockerControllerFactory';
 import { E_OnIPCChannels } from './shared/enums/IPCChannels';
 import { ContainerAction } from './shared/types/EventDockerTypes';
+import { AutoUpdateService } from './services/AutoUpdateService';
 import { TrayService } from './services/TrayService';
 
 export class App {
   public static mainWindow: BrowserWindow | null = null;
   private dockerService = new DockerodeService();
   private trayService!: TrayService;
+  private autoUpdateService = new AutoUpdateService();
 
   public start(): void {
     this.trayService = new TrayService(() => this.createWindow());
@@ -23,6 +25,7 @@ export class App {
       })
       .whenReady()
       .then(() => {
+        this.autoUpdateService.start();
         this.registerEvents();
       });
     app.on('window-all-closed', () => {

@@ -43,7 +43,7 @@ export function StatusFilter(): React.JSX.Element {
     <div ref={ref} className="relative">
       <div
         onClick={toggleDropdown}
-        className="flex w-44 items-center justify-between gap-2 rounded border border-base-300 bg-base-200 px-3 py-2 text-sm text-base-content cursor-pointer select-none"
+        className="flex w-44 cursor-pointer select-none items-center justify-between gap-2 rounded border bg-base-200 px-3 py-2 text-sm text-base-content"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {!statusFilter && (
@@ -102,7 +102,7 @@ export function StatusFilter(): React.JSX.Element {
         )}
       </div>
       {isOpen && (
-        <ul className="absolute right-0 top-full mt-1 z-50 w-full menu bg-base-100 rounded-box p-2 shadow border border-base-300">
+        <ul className="absolute right-0 top-full z-50 mt-1 w-full menu rounded-box border bg-base-100 p-2 shadow">
           {STATUS_OPTIONS.map((option) => (
             <li key={option.value}>
               <a
