@@ -4,6 +4,7 @@ import { join } from 'path';
 import icon from '../../resources/icon.png?asset';
 import { DockerodeService } from './data/services/DockerodeService';
 import { containerControllerFactory } from './factories/controllers/containerControllerFactory';
+import { credentialControllerFactory } from './factories/controllers/credentialControllerFactory';
 import { dockerControllerFactory } from './factories/controllers/dockerControllerFactory';
 import { E_OnIPCChannels } from './shared/enums/IPCChannels';
 import { ContainerAction } from './shared/types/EventDockerTypes';
@@ -75,6 +76,7 @@ export class App {
 
   private registerEvents(): void {
     containerControllerFactory(this.dockerService).register();
+    credentialControllerFactory().register();
     dockerControllerFactory(this.dockerService).register();
 
     this.dockerService.connect().catch(() => {});

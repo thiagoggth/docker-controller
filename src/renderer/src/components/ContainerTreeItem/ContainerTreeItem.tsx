@@ -1,18 +1,22 @@
 import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
+import { CredentialTargetDTO } from '@core/shared/dtos/CredentialDTO';
 import { DockerContainerIcon } from '@gui/components/ContainerIcons/ContainerIcons';
 import { shouldHideContainerStatus } from '@gui/utils/containerDisplay';
+import { buildContainerCredentialTarget } from '@gui/utils/credentialTarget';
 import React from 'react';
 
 interface ContainerTreeItemProps {
   container: ContainerDTO;
   onStart: (id: string) => Promise<void> | void;
   onStop: (id: string) => Promise<void> | void;
+  onOpenCredentials: (target: CredentialTargetDTO) => void;
 }
 
 export function ContainerTreeItem({
   container,
   onStart,
   onStop,
+  onOpenCredentials,
 }: ContainerTreeItemProps): React.JSX.Element {
   const isRunning = container.status === 'running';
   const hideStatus = shouldHideContainerStatus(container.name);
@@ -26,6 +30,11 @@ export function ContainerTreeItem({
     }
 
     await onStart(container.id);
+  };
+
+  const handleOpenCredentials = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onOpenCredentials(buildContainerCredentialTarget(container));
   };
 
   return (
@@ -67,17 +76,24 @@ export function ContainerTreeItem({
         </div>
       </div>
 
-      <button
-        className={`shrink-0 cursor-pointer rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
-          isRunning
-            ? 'bg-error text-white hover:bg-error/80'
-            : 'app-button-outline-success'
-        }`}
-        onClick={handleAction}
-        type="button"
-      >
-        {isRunning ? 'Parar' : 'Iniciar'}
-      </button>
+      <div className="flex shrink-0 items-center gap-2">
+        <button
+          className="app-button-outline-primary cursor-pointer rounded px-2.5 py-1 text-xs font-semibold transition-colors"
+          onClick={handleOpenCredentials}
+          type="button"
+        >
+          Credenciais
+        </button>
+        <button
+          className={`cursor-pointer rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
+            isRunning ? 'bg-error text-white hover:bg-error/80' : 'app-button-outline-success'
+          }`}
+          onClick={handleAction}
+          type="button"
+        >
+          {isRunning ? 'Parar' : 'Iniciar'}
+        </button>
+      </div>
     </div>
   );
 }

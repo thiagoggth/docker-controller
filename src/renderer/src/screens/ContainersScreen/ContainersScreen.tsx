@@ -1,3 +1,5 @@
+import { CredentialTargetDTO } from '@core/shared/dtos/CredentialDTO';
+import { CredentialModal } from '@gui/components/CredentialModal/CredentialModal';
 import { ContainerList } from '@gui/components/ContainerList/ContainerList';
 import { FilterBar } from '@gui/components/FilterBar/FilterBar';
 import { ThemeToggle } from '@gui/components/ThemeToggle/ThemeToggle';
@@ -26,6 +28,7 @@ export function ContainersScreen(): React.JSX.Element {
   const downloadUpdate = useUpdateStore((state) => state.downloadUpdate);
   const installUpdate = useUpdateStore((state) => state.installUpdate);
   const [updateRequestInFlight, setUpdateRequestInFlight] = useState(false);
+  const [credentialTarget, setCredentialTarget] = useState<CredentialTargetDTO | null>(null);
 
   const filteredContainers = containers.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -188,6 +191,7 @@ export function ContainersScreen(): React.JSX.Element {
               onStart={startContainer}
               onStop={stopContainer}
               onOpenComposeFolder={openComposeFolder}
+              onOpenCredentials={setCredentialTarget}
             />
           )}
         </div>
@@ -203,6 +207,14 @@ export function ContainersScreen(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      {credentialTarget && (
+        <CredentialModal
+          key={credentialTarget.targetKey}
+          target={credentialTarget}
+          onClose={() => setCredentialTarget(null)}
+        />
+      )}
     </div>
   );
 }

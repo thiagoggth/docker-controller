@@ -1,4 +1,5 @@
 import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
+import { CredentialTargetDTO } from '@core/shared/dtos/CredentialDTO';
 import { ComposeGroupCard } from '@gui/components/ComposeGroupCard/ComposeGroupCard';
 import { ContainerTreeItem } from '@gui/components/ContainerTreeItem/ContainerTreeItem';
 import React, { useEffect, useState } from 'react';
@@ -64,6 +65,7 @@ interface ContainerListProps {
   onStart: (id: string) => Promise<void> | void;
   onStop: (id: string) => Promise<void> | void;
   onOpenComposeFolder: (path: string) => Promise<void> | void;
+  onOpenCredentials: (target: CredentialTargetDTO) => void;
 }
 
 export function ContainerList({
@@ -71,6 +73,7 @@ export function ContainerList({
   onStart,
   onStop,
   onOpenComposeFolder,
+  onOpenCredentials,
 }: ContainerListProps): React.JSX.Element {
   const { groups, standalone } = buildContainerSections(containers);
   const groupKeySignature = groups.map((group) => group.key).join('|');
@@ -153,6 +156,7 @@ export function ContainerList({
           onStop={onStop}
           onStartAll={handleStartAll}
           onStopAll={handleStopAll}
+          onOpenCredentials={onOpenCredentials}
         />
       ))}
 
@@ -164,6 +168,7 @@ export function ContainerList({
               container={container}
               onStart={onStart}
               onStop={onStop}
+              onOpenCredentials={onOpenCredentials}
             />
           ))}
         </>

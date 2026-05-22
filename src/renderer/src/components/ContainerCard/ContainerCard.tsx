@@ -1,17 +1,21 @@
 import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
+import { CredentialTargetDTO } from '@core/shared/dtos/CredentialDTO';
 import { shouldHideContainerStatus } from '@gui/utils/containerDisplay';
+import { buildContainerCredentialTarget } from '@gui/utils/credentialTarget';
 import React from 'react';
 
 interface ContainerCardProps {
   container: ContainerDTO;
   onStart: (id: string) => void;
   onStop: (id: string) => void;
+  onOpenCredentials?: (target: CredentialTargetDTO) => void;
 }
 
 export function ContainerCard({
   container,
   onStart,
   onStop,
+  onOpenCredentials,
 }: ContainerCardProps): React.JSX.Element {
   const shortId = container.id.substring(0, 8);
   const isRunning = container.status === 'running';
@@ -51,17 +55,26 @@ export function ContainerCard({
           {!shouldHideStatus && !isRunning && <span>Pronto para iniciar</span>}
         </div>
       </div>
-      <button
-        className={`shrink-0 rounded px-2.5 py-1 text-xs font-semibold cursor-pointer transition-colors ${
-          isRunning
-            ? 'bg-error text-white hover:bg-error/80'
-            : 'app-button-outline-success'
-        }`}
-        onClick={() => (isRunning ? onStop(container.id) : onStart(container.id))}
-        data-testid="action-button"
-      >
-        {isRunning ? 'Parar' : 'Iniciar'}
-      </button>
+      <div className="flex shrink-0 items-center gap-2">
+        {onOpenCredentials && (
+          <button
+            className="app-button-outline-primary cursor-pointer rounded px-2.5 py-1 text-xs font-semibold transition-colors"
+            onClick={() => onOpenCredentials(buildContainerCredentialTarget(container))}
+            type="button"
+          >
+            Credenciais
+          </button>
+        )}
+        <button
+          className={`cursor-pointer rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
+            isRunning ? 'bg-error text-white hover:bg-error/80' : 'app-button-outline-success'
+          }`}
+          onClick={() => (isRunning ? onStop(container.id) : onStart(container.id))}
+          data-testid="action-button"
+        >
+          {isRunning ? 'Parar' : 'Iniciar'}
+        </button>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,8 @@ export enum E_IPCChannels {
   CONTAINERS_START = 'containers:start',
   CONTAINERS_STOP = 'containers:stop',
   CONTAINERS_OPEN_COMPOSE_FOLDER = 'containers:open-compose-folder',
+  CREDENTIALS_GET = 'credentials:get',
+  CREDENTIALS_SAVE = 'credentials:save',
   APP_UPDATE_GET_STATE = 'app:update:get-state',
   APP_UPDATE_CHECK = 'app:update:check',
   APP_UPDATE_DOWNLOAD = 'app:update:download',

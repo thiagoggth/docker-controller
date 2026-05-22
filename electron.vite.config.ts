@@ -6,11 +6,16 @@ import { resolve } from 'path';
 export default defineConfig({
   main: {
     resolve: {
-      external: ['dockerode'],
+      external: ['dockerode', 'better-sqlite3'],
       alias: {
         '@core': resolve(__dirname, 'src/main'),
         '@gui': resolve(__dirname, 'src/renderer/src'),
         '@preload': resolve(__dirname, 'src/preload'),
+      },
+    },
+    build: {
+      rollupOptions: {
+        external: ['better-sqlite3'],
       },
     },
     optimizeDeps: {

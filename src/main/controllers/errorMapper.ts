@@ -1,5 +1,6 @@
 import { ContainerActionError } from '@core/domain/errors/ContainerActionError';
 import { ContainerNotFoundError } from '@core/domain/errors/ContainerNotFoundError';
+import { CredentialStorageError } from '@core/domain/errors/CredentialStorageError';
 import { DockerDaemonUnavailableError } from '@core/domain/errors/DockerDaemonUnavailableError';
 import { DomainError } from '@core/domain/errors/DomainError';
 import { Report } from '@core/shared/types/ApiTypes';
@@ -15,6 +16,10 @@ export function mapErrorToReports(error: unknown): Report[] {
 
   if (error instanceof DockerDaemonUnavailableError) {
     return [{ propName: 'docker', message: error.message }];
+  }
+
+  if (error instanceof CredentialStorageError) {
+    return [{ propName: 'credentials', message: error.message }];
   }
 
   if (error instanceof DomainError) {
