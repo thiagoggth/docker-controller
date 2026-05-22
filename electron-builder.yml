@@ -41,11 +41,5 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-publish:
-  provider: github
-  owner: ${env.GH_OWNER}
-  repo: ${env.GH_REPO}
-  releaseType: release
-  vPrefixedTagName: true
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

@@ -28,6 +28,7 @@ export default defineConfig(
       ...eslintPluginReactRefresh.configs.vite.rules,
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
+      'react-hooks/set-state-in-effect': 'warn',
     },
   },
   eslintConfigPrettier,
