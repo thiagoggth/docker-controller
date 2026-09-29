@@ -2,7 +2,7 @@ import { E_OnIPCChannels } from '@core/shared/enums/IPCChannels';
 import {
   ContainerStreamDataDTO,
   ContainerStreamErrorDTO,
-  ContainerStreamSessionDTO,
+  ContainerTerminalExitDTO,
 } from '@core/shared/types/ContainerStreamTypes';
 import { resolveStartedSession } from '@gui/services/containerStreamLifecycle';
 import { containerStreamService } from '@gui/services/containerStreamService';
@@ -21,6 +21,7 @@ export function ContainerTerminalPanel({
   const elementRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [exitStatus, setExitStatus] = useState<number | null>(null);
+  const [hasExited, setHasExited] = useState(false);
 
   useEffect(() => {
     const element = elementRef.current;
@@ -30,7 +31,7 @@ export function ContainerTerminalPanel({
     let sessionId: string | null = null;
     const pending: Array<
       | { type: 'data'; payload: ContainerStreamDataDTO }
-      | { type: 'exit'; payload: ContainerStreamSessionDTO }
+      | { type: 'exit'; payload: ContainerTerminalExitDTO }
       | { type: 'error'; payload: ContainerStreamErrorDTO }
     > = [];
     const terminal = new Terminal({ cursorBlink: true, convertEol: true });
@@ -47,15 +48,17 @@ export function ContainerTerminalPanel({
       }
       if (event.payload.sessionId !== sessionId) return;
       if (event.type === 'data') terminal.write(event.payload.data);
-      else if (event.type === 'exit') setExitStatus(0);
-      else setError(event.payload.message);
+      else if (event.type === 'exit') {
+        setExitStatus(event.payload.exitCode);
+        setHasExited(true);
+      } else setError(event.payload.message);
     };
 
     const removeData = window.api.on<ContainerStreamDataDTO>(
       E_OnIPCChannels.CONTAINERS_TERMINAL_DATA,
       (event) => handle({ type: 'data', payload: event }),
     );
-    const removeExit = window.api.on<ContainerStreamSessionDTO>(
+    const removeExit = window.api.on<ContainerTerminalExitDTO>(
       E_OnIPCChannels.CONTAINERS_TERMINAL_EXIT,
       (event) => handle({ type: 'exit', payload: event }),
     );
@@ -117,7 +120,11 @@ export function ContainerTerminalPanel({
           {error}
         </div>
       )}
-      {exitStatus !== null && <div className="text-xs text-base-content/70">Terminal encerrado</div>}
+      {hasExited && (
+        <div className="text-xs text-base-content/70">
+          Terminal encerrado (código {exitStatus ?? 'indisponível'})
+        </div>
+      )}
       <div
         ref={elementRef}
         aria-label="Terminal do contêiner"

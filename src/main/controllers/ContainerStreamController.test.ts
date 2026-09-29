@@ -77,7 +77,7 @@ describe('ContainerStreamController', () => {
     );
     const sessionId = result.data.sessionId;
     callbacks!.onData('prompt');
-    callbacks!.onClose();
+    callbacks!.onClose(17);
     callbacks!.onError(new Error('failed'));
     expect(sender.send).toHaveBeenCalledWith(E_OnIPCChannels.CONTAINERS_TERMINAL_DATA, {
       sessionId,
@@ -85,6 +85,7 @@ describe('ContainerStreamController', () => {
     });
     expect(sender.send).toHaveBeenCalledWith(E_OnIPCChannels.CONTAINERS_TERMINAL_EXIT, {
       sessionId,
+      exitCode: 17,
     });
     expect(sender.send).toHaveBeenCalledWith(E_OnIPCChannels.CONTAINERS_TERMINAL_ERROR, {
       sessionId,
@@ -172,6 +173,7 @@ describe('ContainerStreamController', () => {
     expect(settled).toBe(true);
     expect(sender.send).toHaveBeenCalledWith(E_OnIPCChannels.CONTAINERS_TERMINAL_EXIT, {
       sessionId: started.data.sessionId,
+      exitCode: null,
     });
     ipc.send(
       E_IPCChannels.CONTAINERS_TERMINAL_INPUT,

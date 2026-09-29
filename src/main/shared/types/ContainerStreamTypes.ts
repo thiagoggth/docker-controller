@@ -2,6 +2,8 @@ export type ContainerStreamType = 'logs' | 'terminal';
 
 export type ContainerStreamSessionDTO = { sessionId: string };
 
+export type ContainerTerminalExitDTO = { sessionId: string; exitCode: number | null };
+
 export type ContainerStreamDataDTO = { sessionId: string; data: string };
 
 export type ContainerStreamErrorDTO = { sessionId: string; message: string };

@@ -12,7 +12,7 @@ import { Duplex, Readable, Writable } from 'node:stream';
 type ContainerStreamSession = {
   stream: Readable | Duplex;
   exec?: Dockerode.Exec;
-  finalize(error?: Error): void;
+  finalize(error?: Error, exitCode?: number | null): void;
 };
 
 type TerminalStreamSession = ContainerStreamSession & {
@@ -131,7 +131,8 @@ export class DockerodeContainerStreamService implements IContainerStreamService 
     }
 
     let finalized = false;
-    const finalize = (error?: Error): void => {
+    let exitInspectionStarted = false;
+    const finalize = (error?: Error, exitCode?: number | null): void => {
       if (finalized) return;
 
       finalized = true;
@@ -139,7 +140,7 @@ export class DockerodeContainerStreamService implements IContainerStreamService 
       if (error) {
         callbacks.onError(error);
       } else {
-        callbacks.onClose();
+        callbacks.onClose(exitCode);
       }
     };
 
@@ -147,8 +148,20 @@ export class DockerodeContainerStreamService implements IContainerStreamService 
     if (forwardData) {
       stream.on('data', (chunk: Buffer | string) => callbacks.onData(chunk.toString()));
     }
-    stream.once('end', () => finalize());
-    stream.once('close', () => finalize());
+    const handleEnd = () => {
+      if (!exec) {
+        finalize();
+        return;
+      }
+      if (exitInspectionStarted) return;
+      exitInspectionStarted = true;
+      void exec
+        .inspect()
+        .then((inspection) => finalize(undefined, inspection.ExitCode ?? null))
+        .catch(() => finalize(undefined, null));
+    };
+    stream.once('end', handleEnd);
+    stream.once('close', handleEnd);
     stream.once('error', (error) => finalize(this.asError(error)));
   }
 

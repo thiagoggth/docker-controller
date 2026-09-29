@@ -29,17 +29,20 @@ class TestDuplex extends Duplex {
 const callbacks = (): ContainerStreamCallbacks & {
   data: string[];
   closeCalls: number;
+  exitCodes: Array<number | null | undefined>;
   errors: Error[];
 } => {
   const result = {
     data: [] as string[],
     closeCalls: 0,
+    exitCodes: [] as Array<number | null | undefined>,
     errors: [] as Error[],
     onData(data: string) {
       result.data.push(data);
     },
-    onClose() {
+    onClose(exitCode?: number | null) {
       result.closeCalls += 1;
+      result.exitCodes.push(exitCode);
     },
     onError(error: Error) {
       result.errors.push(error);
@@ -65,6 +68,8 @@ const createDocker = ({
   logsError,
   execError,
   resizeError,
+  exitCode,
+  inspectError,
 }: {
   stream?: PassThrough | TestDuplex;
   tty?: boolean;
@@ -72,11 +77,17 @@ const createDocker = ({
   logsError?: Error;
   execError?: Error;
   resizeError?: Error;
+  exitCode?: number | null;
+  inspectError?: Error;
 } = {}) => {
   const exec = {
     start: vi.fn().mockResolvedValue(stream),
     resize: vi.fn().mockImplementation(async () => {
       if (resizeError) throw resizeError;
+    }),
+    inspect: vi.fn().mockImplementation(async () => {
+      if (inspectError) throw inspectError;
+      return { ExitCode: exitCode };
     }),
   };
   const container = {
@@ -200,6 +211,33 @@ describe('DockerodeContainerStreamService', () => {
     expect(fake.exec.resize).toHaveBeenCalledWith({ h: 24, w: 80 });
     expect(Buffer.concat(stream.writes).toString()).toBe('ls\n');
     expect(fake.exec.resize).toHaveBeenLastCalledWith({ h: 40, w: 120 });
+  });
+
+  it('reports the Docker exec exit code when the terminal stream ends', async () => {
+    const stream = new TestDuplex();
+    const fake = createDocker({ stream, exitCode: 17 });
+    const service = createService(fake);
+    const sink = callbacks();
+
+    await service.startTerminal('term-1', 'container-1', 80, 24, sink);
+    stream.emit('end');
+    await flush();
+
+    expect(fake.exec.inspect).toHaveBeenCalledOnce();
+    expect(sink.exitCodes).toEqual([17]);
+  });
+
+  it('reports a null terminal exit code when Docker cannot inspect the completed exec', async () => {
+    const stream = new TestDuplex();
+    const fake = createDocker({ stream, inspectError: new Error('inspect failed') });
+    const service = createService(fake);
+    const sink = callbacks();
+
+    await service.startTerminal('term-1', 'container-1', 80, 24, sink);
+    stream.emit('end');
+    await flush();
+
+    expect(sink.exitCodes).toEqual([null]);
   });
 
   it('destroys the terminal stream and leaves no session when initial resize fails', async () => {

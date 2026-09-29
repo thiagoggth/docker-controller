@@ -114,14 +114,14 @@ export class ContainerStreamController {
             : E_OnIPCChannels.CONTAINERS_TERMINAL_DATA,
           { sessionId, data: chunk },
         ),
-      onClose: () => {
+      onClose: (exitCode) => {
         record.ended = true;
         this.send(
           sender,
           type === 'logs'
             ? E_OnIPCChannels.CONTAINERS_LOGS_ENDED
             : E_OnIPCChannels.CONTAINERS_TERMINAL_EXIT,
-          { sessionId },
+          type === 'logs' ? { sessionId } : { sessionId, exitCode: exitCode ?? null },
         );
       },
       onError: (error) => {

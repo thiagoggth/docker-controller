@@ -26,7 +26,7 @@ export function ContainerConsoleModal({
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
-    closeButtonRef.current?.focus();
+    if (mode === 'logs') closeButtonRef.current?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -68,7 +68,7 @@ export function ContainerConsoleModal({
         previouslyFocused.focus();
       }
     };
-  }, []);
+  }, [mode]);
 
   return (
     <div

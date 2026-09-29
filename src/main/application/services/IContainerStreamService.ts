@@ -1,6 +1,6 @@
 export interface ContainerStreamCallbacks {
   onData(data: string): void;
-  onClose(): void;
+  onClose(exitCode?: number | null): void;
   onError(error: Error): void;
 }
 
