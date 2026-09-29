@@ -7,6 +7,9 @@ import { IApi } from './types';
 
 // Custom APIs for renderer
 const api: IApi = {
+  send: (channel: E_IPCChannels, data: unknown): void => {
+    ipcRenderer.send(channel, data);
+  },
   sendSync: <T = any>(channel: E_IPCChannels, data: any): ApiResult<T> => {
     const response: ApiResult<T> = ipcRenderer.sendSync(channel, data);
     if (response.success === false) {

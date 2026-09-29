@@ -6,6 +6,8 @@ import { DockerodeService } from './data/services/DockerodeService';
 import { containerControllerFactory } from './factories/controllers/containerControllerFactory';
 import { credentialControllerFactory } from './factories/controllers/credentialControllerFactory';
 import { dockerControllerFactory } from './factories/controllers/dockerControllerFactory';
+import { containerStreamControllerFactory } from './factories/controllers/containerStreamControllerFactory';
+import { ContainerStreamController } from './controllers/ContainerStreamController';
 import { E_OnIPCChannels } from './shared/enums/IPCChannels';
 import { ContainerAction } from './shared/types/EventDockerTypes';
 import { AutoUpdateService } from './services/AutoUpdateService';
@@ -16,6 +18,7 @@ export class App {
   private dockerService = new DockerodeService();
   private trayService!: TrayService;
   private autoUpdateService = new AutoUpdateService();
+  private containerStreamController!: ContainerStreamController;
 
   public start(): void {
     this.trayService = new TrayService(() => this.createWindow());
@@ -54,6 +57,7 @@ export class App {
 
     App.mainWindow.on('close', (event) => {
       event.preventDefault();
+      void this.containerStreamController?.closeAll();
       App.mainWindow?.destroy();
       App.mainWindow = null;
     });
@@ -75,6 +79,8 @@ export class App {
   }
 
   private registerEvents(): void {
+    this.containerStreamController = containerStreamControllerFactory(this.dockerService);
+    this.containerStreamController.register();
     containerControllerFactory(this.dockerService).register();
     credentialControllerFactory().register();
     dockerControllerFactory(this.dockerService).register();

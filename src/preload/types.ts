@@ -3,6 +3,7 @@ import { ApiResult } from '@core/shared/types/ApiTypes';
 
 export type RemoveListener = () => void;
 export interface IApi {
+  send: (channel: E_IPCChannels, data: unknown) => void;
   sendSync: <T = any>(channel: E_IPCChannels, data: any) => ApiResult<T>;
   invoke: <T = any>(channel: E_IPCChannels, data?: any) => Promise<ApiResult<T>>;
   on: <T = any>(channel: E_OnIPCChannels, callback: (data: T) => void) => RemoveListener;
