@@ -8,6 +8,7 @@ import {
 import { resolveStartedSession } from '@gui/services/containerStreamLifecycle';
 import { containerStreamService } from '@gui/services/containerStreamService';
 import React, { useEffect, useRef, useState } from 'react';
+import { ContainerLogsEvent, createContainerLogsEventGate } from './containerLogsEventGate';
 import { appendLogChunk } from './logBuffer';
 
 interface ContainerLogsPanelProps {
@@ -30,33 +31,28 @@ export function ContainerLogsPanel({ container }: ContainerLogsPanelProps): Reac
   useEffect(() => {
     let disposed = false;
     sessionIdRef.current = null;
+    const eventGate = createContainerLogsEventGate((event: ContainerLogsEvent) => {
+      if (event.type === 'data') {
+        setLogs((current) => appendLogChunk(current, event.payload.data));
+      } else if (event.type === 'ended') {
+        setStatus('ended');
+      } else {
+        setError(event.payload.message);
+        setStatus('error');
+      }
+    });
 
     const removeDataListener = window.api.on<ContainerStreamDataDTO>(
       E_OnIPCChannels.CONTAINERS_LOGS_DATA,
-      ({ sessionId, data }) => {
-        if (sessionId !== sessionIdRef.current) {
-          return;
-        }
-
-        setLogs((current) => appendLogChunk(current, data));
-      },
+      (event) => eventGate.receive({ type: 'data', payload: event }),
     );
     const removeEndedListener = window.api.on<ContainerStreamSessionDTO>(
       E_OnIPCChannels.CONTAINERS_LOGS_ENDED,
-      ({ sessionId }) => {
-        if (sessionId === sessionIdRef.current) {
-          setStatus('ended');
-        }
-      },
+      (event) => eventGate.receive({ type: 'ended', payload: event }),
     );
     const removeErrorListener = window.api.on<ContainerStreamErrorDTO>(
       E_OnIPCChannels.CONTAINERS_LOGS_ERROR,
-      ({ sessionId, message }) => {
-        if (sessionId === sessionIdRef.current) {
-          setError(message);
-          setStatus('error');
-        }
-      },
+      (event) => eventGate.receive({ type: 'error', payload: event }),
     );
 
     void resolveStartedSession(
@@ -71,6 +67,7 @@ export function ContainerLogsPanel({ container }: ContainerLogsPanelProps): Reac
 
         sessionIdRef.current = sessionId;
         setStatus('streaming');
+        eventGate.setSessionId(sessionId);
       })
       .catch((startError) => {
         if (!disposed) {
@@ -81,6 +78,7 @@ export function ContainerLogsPanel({ container }: ContainerLogsPanelProps): Reac
 
     return () => {
       disposed = true;
+      eventGate.dispose();
       removeDataListener();
       removeEndedListener();
       removeErrorListener();
