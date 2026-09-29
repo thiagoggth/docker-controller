@@ -66,6 +66,8 @@ interface ContainerListProps {
   onStop: (id: string) => Promise<void> | void;
   onOpenComposeFolder: (path: string) => Promise<void> | void;
   onOpenCredentials: (target: CredentialTargetDTO) => void;
+  onOpenLogs: (container: ContainerDTO) => void;
+  onOpenTerminal: (container: ContainerDTO) => void;
 }
 
 export function ContainerList({
@@ -74,6 +76,8 @@ export function ContainerList({
   onStop,
   onOpenComposeFolder,
   onOpenCredentials,
+  onOpenLogs,
+  onOpenTerminal,
 }: ContainerListProps): React.JSX.Element {
   const { groups, standalone } = buildContainerSections(containers);
   const groupKeySignature = groups.map((group) => group.key).join('|');
@@ -157,6 +161,8 @@ export function ContainerList({
           onStartAll={handleStartAll}
           onStopAll={handleStopAll}
           onOpenCredentials={onOpenCredentials}
+          onOpenLogs={onOpenLogs}
+          onOpenTerminal={onOpenTerminal}
         />
       ))}
 
@@ -169,6 +175,8 @@ export function ContainerList({
               onStart={onStart}
               onStop={onStop}
               onOpenCredentials={onOpenCredentials}
+              onOpenLogs={onOpenLogs}
+              onOpenTerminal={onOpenTerminal}
             />
           ))}
         </>

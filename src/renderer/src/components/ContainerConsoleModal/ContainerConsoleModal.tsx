@@ -2,6 +2,7 @@ import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
 import React, { useEffect, useRef } from 'react';
 import { FiX } from 'react-icons/fi';
 import { ContainerLogsPanel } from './ContainerLogsPanel';
+import { ContainerTerminalPanel } from './ContainerTerminalPanel';
 
 interface ContainerConsoleModalProps {
   container: ContainerDTO;
@@ -95,7 +96,11 @@ export function ContainerConsoleModal({
             <FiX aria-hidden="true" className="h-4 w-4" />
           </button>
         </header>
-        {mode === 'logs' ? <ContainerLogsPanel container={container} key={container.id} /> : null}
+        {mode === 'logs' ? (
+          <ContainerLogsPanel container={container} key={`logs-${container.id}`} />
+        ) : (
+          <ContainerTerminalPanel containerId={container.id} key={`terminal-${container.id}`} />
+        )}
       </section>
     </div>
   );

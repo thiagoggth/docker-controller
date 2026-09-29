@@ -1,4 +1,6 @@
 import { CredentialTargetDTO } from '@core/shared/dtos/CredentialDTO';
+import { ContainerDTO } from '@core/shared/dtos/ContainerDTO';
+import { ContainerConsoleModal } from '@gui/components/ContainerConsoleModal/ContainerConsoleModal';
 import { CredentialModal } from '@gui/components/CredentialModal/CredentialModal';
 import { ContainerList } from '@gui/components/ContainerList/ContainerList';
 import { FilterBar } from '@gui/components/FilterBar/FilterBar';
@@ -29,6 +31,10 @@ export function ContainersScreen(): React.JSX.Element {
   const installUpdate = useUpdateStore((state) => state.installUpdate);
   const [updateRequestInFlight, setUpdateRequestInFlight] = useState(false);
   const [credentialTarget, setCredentialTarget] = useState<CredentialTargetDTO | null>(null);
+  const [activeConsole, setActiveConsole] = useState<{
+    container: ContainerDTO;
+    mode: 'logs' | 'terminal';
+  } | null>(null);
 
   const filteredContainers = containers.filter((c) => {
     const q = searchQuery.toLowerCase();
@@ -192,6 +198,8 @@ export function ContainersScreen(): React.JSX.Element {
               onStop={stopContainer}
               onOpenComposeFolder={openComposeFolder}
               onOpenCredentials={setCredentialTarget}
+              onOpenLogs={(container) => setActiveConsole({ container, mode: 'logs' })}
+              onOpenTerminal={(container) => setActiveConsole({ container, mode: 'terminal' })}
             />
           )}
         </div>
@@ -213,6 +221,14 @@ export function ContainersScreen(): React.JSX.Element {
           key={credentialTarget.targetKey}
           target={credentialTarget}
           onClose={() => setCredentialTarget(null)}
+        />
+      )}
+      {activeConsole && (
+        <ContainerConsoleModal
+          key={`${activeConsole.container.id}-${activeConsole.mode}`}
+          container={activeConsole.container}
+          mode={activeConsole.mode}
+          onClose={() => setActiveConsole(null)}
         />
       )}
     </div>

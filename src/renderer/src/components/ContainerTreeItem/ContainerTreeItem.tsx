@@ -10,6 +10,8 @@ interface ContainerTreeItemProps {
   onStart: (id: string) => Promise<void> | void;
   onStop: (id: string) => Promise<void> | void;
   onOpenCredentials: (target: CredentialTargetDTO) => void;
+  onOpenLogs: (container: ContainerDTO) => void;
+  onOpenTerminal: (container: ContainerDTO) => void;
 }
 
 export function ContainerTreeItem({
@@ -17,6 +19,8 @@ export function ContainerTreeItem({
   onStart,
   onStop,
   onOpenCredentials,
+  onOpenLogs,
+  onOpenTerminal,
 }: ContainerTreeItemProps): React.JSX.Element {
   const isRunning = container.status === 'running';
   const hideStatus = shouldHideContainerStatus(container.name);
@@ -35,6 +39,16 @@ export function ContainerTreeItem({
   const handleOpenCredentials = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onOpenCredentials(buildContainerCredentialTarget(container));
+  };
+
+  const handleOpenLogs = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onOpenLogs(container);
+  };
+
+  const handleOpenTerminal = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onOpenTerminal(container);
   };
 
   return (
@@ -77,6 +91,25 @@ export function ContainerTreeItem({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        <button
+          aria-label={`Logs de ${container.name}`}
+          title="Logs"
+          className="app-button-outline-primary cursor-pointer rounded px-2.5 py-1 text-xs font-semibold"
+          onClick={handleOpenLogs}
+          type="button"
+        >
+          Logs
+        </button>
+        <button
+          aria-label={`Terminal de ${container.name}`}
+          title="Terminal"
+          className="app-button-outline-primary cursor-pointer rounded px-2.5 py-1 text-xs font-semibold"
+          disabled={!isRunning}
+          onClick={handleOpenTerminal}
+          type="button"
+        >
+          Terminal
+        </button>
         <button
           className="app-button-outline-primary cursor-pointer rounded px-2.5 py-1 text-xs font-semibold transition-colors"
           onClick={handleOpenCredentials}

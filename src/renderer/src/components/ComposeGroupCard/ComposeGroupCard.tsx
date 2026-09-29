@@ -17,6 +17,8 @@ interface ComposeGroupCardProps {
   onStartAll: (containers: ContainerDTO[]) => Promise<void> | void;
   onStopAll: (containers: ContainerDTO[]) => Promise<void> | void;
   onOpenCredentials: (target: CredentialTargetDTO) => void;
+  onOpenLogs: (container: ContainerDTO) => void;
+  onOpenTerminal: (container: ContainerDTO) => void;
 }
 
 function collectSummaryPorts(containers: ContainerDTO[]): string {
@@ -43,6 +45,8 @@ export function ComposeGroupCard({
   onStartAll,
   onStopAll,
   onOpenCredentials,
+  onOpenLogs,
+  onOpenTerminal,
 }: ComposeGroupCardProps): React.JSX.Element {
   const namesSummary = containers.map((container) => container.name).join(', ');
   const portsSummary = collectSummaryPorts(containers);
@@ -214,6 +218,8 @@ export function ComposeGroupCard({
                 onStart={onStart}
                 onStop={onStop}
                 onOpenCredentials={onOpenCredentials}
+                onOpenLogs={onOpenLogs}
+                onOpenTerminal={onOpenTerminal}
               />
             ))}
           </div>
