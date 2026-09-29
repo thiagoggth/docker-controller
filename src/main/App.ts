@@ -8,6 +8,7 @@ import { credentialControllerFactory } from './factories/controllers/credentialC
 import { dockerControllerFactory } from './factories/controllers/dockerControllerFactory';
 import { containerStreamControllerFactory } from './factories/controllers/containerStreamControllerFactory';
 import { ContainerStreamController } from './controllers/ContainerStreamController';
+import { closeWindowAfterStreamCleanup } from './controllers/closeWindowAfterStreamCleanup';
 import { E_OnIPCChannels } from './shared/enums/IPCChannels';
 import { ContainerAction } from './shared/types/EventDockerTypes';
 import { AutoUpdateService } from './services/AutoUpdateService';
@@ -19,6 +20,7 @@ export class App {
   private trayService!: TrayService;
   private autoUpdateService = new AutoUpdateService();
   private containerStreamController!: ContainerStreamController;
+  private closingWindow = false;
 
   public start(): void {
     this.trayService = new TrayService(() => this.createWindow());
@@ -43,6 +45,7 @@ export class App {
   }
 
   private createWindow(): void {
+    this.closingWindow = false;
     App.mainWindow = new BrowserWindow({
       width: 1100,
       height: 670,
@@ -57,9 +60,19 @@ export class App {
 
     App.mainWindow.on('close', (event) => {
       event.preventDefault();
-      void this.containerStreamController?.closeAll();
-      App.mainWindow?.destroy();
-      App.mainWindow = null;
+      if (this.closingWindow) return;
+      this.closingWindow = true;
+      const closingWindow = App.mainWindow;
+      void closeWindowAfterStreamCleanup(
+        () => this.containerStreamController?.closeAll() ?? Promise.resolve(),
+        () => {
+          if (App.mainWindow === closingWindow) {
+            closingWindow?.destroy();
+            App.mainWindow = null;
+          }
+          this.closingWindow = false;
+        },
+      );
     });
 
     App.mainWindow.on('ready-to-show', () => {

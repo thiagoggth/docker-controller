@@ -127,7 +127,7 @@ describe('ContainerStreamController', () => {
     expect(service.stop).not.toHaveBeenCalled();
   });
 
-  it('makes stop idempotent for ended sessions and clears ownership on closeAll', async () => {
+  it('makes stop idempotent for an already-ended owned session', async () => {
     const sender = { id: 1, send: vi.fn(), isDestroyed: () => false };
     const started = await ipc.invoke(E_IPCChannels.CONTAINERS_LOGS_START, { id: 'abc' }, sender);
     callbacks!.onClose();
@@ -140,8 +140,39 @@ describe('ContainerStreamController', () => {
         )
       ).success,
     ).toBe(true);
-    await controller.closeAll();
+  });
+
+  it('awaits service cleanup for active sessions and clears ownership', async () => {
+    const sender = { id: 1, send: vi.fn(), isDestroyed: () => false };
+    const started = await ipc.invoke(
+      E_IPCChannels.CONTAINERS_TERMINAL_START,
+      { id: 'abc', cols: 80, rows: 24 },
+      sender,
+    );
+    let resolveCleanup!: () => void;
+    vi.mocked(service.closeAll).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveCleanup = () => {
+            callbacks!.onClose();
+            resolve();
+          };
+        }),
+    );
+    const closing = controller.closeAll();
+    let settled = false;
+    void closing.then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
     expect(service.closeAll).toHaveBeenCalledOnce();
+    resolveCleanup();
+    await closing;
+    expect(settled).toBe(true);
+    expect(sender.send).toHaveBeenCalledWith(E_OnIPCChannels.CONTAINERS_TERMINAL_EXIT, {
+      sessionId: started.data.sessionId,
+    });
     ipc.send(
       E_IPCChannels.CONTAINERS_TERMINAL_INPUT,
       { sessionId: started.data.sessionId, data: 'ignored' },
@@ -151,8 +182,95 @@ describe('ContainerStreamController', () => {
   });
 
   it('clears the provisional owner when start fails', async () => {
-    vi.mocked(service.startLogs).mockRejectedValueOnce(new Error('nope'));
-    const result = await ipc.invoke(E_IPCChannels.CONTAINERS_LOGS_START, { id: 'abc' });
+    let failedSessionId = '';
+    vi.mocked(service.startLogs).mockImplementationOnce(async (sessionId) => {
+      failedSessionId = sessionId;
+      throw new Error('nope');
+    });
+    const sender = { id: 1, send: vi.fn(), isDestroyed: () => false };
+    const result = await ipc.invoke(E_IPCChannels.CONTAINERS_LOGS_START, { id: 'abc' }, sender);
     expect(result.success).toBe(false);
+    const stopped = await ipc.invoke(
+      E_IPCChannels.CONTAINERS_LOGS_STOP,
+      { sessionId: failedSessionId },
+      sender,
+    );
+    expect(stopped.success).toBe(true);
+    expect(service.stop).not.toHaveBeenCalled();
+    ipc.send(
+      E_IPCChannels.CONTAINERS_TERMINAL_INPUT,
+      { sessionId: failedSessionId, data: 'x' },
+      sender,
+    );
+    expect(service.writeTerminal).not.toHaveBeenCalled();
+    expect(sender.send).toHaveBeenCalledWith(
+      E_OnIPCChannels.CONTAINERS_TERMINAL_ERROR,
+      expect.objectContaining({ sessionId: failedSessionId }),
+    );
+  });
+
+  it.each([
+    [E_IPCChannels.CONTAINERS_LOGS_START, {}],
+    [E_IPCChannels.CONTAINERS_LOGS_START, { id: '' }],
+    [E_IPCChannels.CONTAINERS_LOGS_START, { id: '  ' }],
+    [E_IPCChannels.CONTAINERS_TERMINAL_START, { id: 'abc', cols: 0, rows: 24 }],
+    [E_IPCChannels.CONTAINERS_TERMINAL_START, { id: 'abc', cols: 80.5, rows: 24 }],
+    [E_IPCChannels.CONTAINERS_TERMINAL_START, { id: 'abc', cols: Infinity, rows: 24 }],
+    [E_IPCChannels.CONTAINERS_TERMINAL_START, { id: 'abc', cols: 80, rows: -1 }],
+    [E_IPCChannels.CONTAINERS_LOGS_STOP, {}],
+    [E_IPCChannels.CONTAINERS_TERMINAL_STOP, { sessionId: '' }],
+  ])('rejects malformed invoke payloads on %s', async (channel, payload) => {
+    const result = await ipc.invoke(channel, payload);
+    expect(result.success).toBe(false);
+    expect(service.startLogs).not.toHaveBeenCalled();
+    expect(service.startTerminal).not.toHaveBeenCalled();
+    expect(service.stop).not.toHaveBeenCalled();
+  });
+
+  it.each([undefined, {}, { sessionId: '', data: 'x' }, { sessionId: 'session', data: 1 }])(
+    'rejects malformed terminal input payloads without writing',
+    (payload) => {
+      const sender = { id: 1, send: vi.fn(), isDestroyed: () => false };
+      ipc.send(E_IPCChannels.CONTAINERS_TERMINAL_INPUT, payload, sender);
+      expect(service.writeTerminal).not.toHaveBeenCalled();
+      expect(sender.send).toHaveBeenCalledWith(
+        E_OnIPCChannels.CONTAINERS_TERMINAL_ERROR,
+        expect.objectContaining({ message: expect.any(String) }),
+      );
+    },
+  );
+
+  it.each([
+    undefined,
+    {},
+    { sessionId: 'session', cols: 0, rows: 24 },
+    { sessionId: 'session', cols: 80.5, rows: 24 },
+    { sessionId: 'session', cols: 80, rows: Infinity },
+  ])('rejects malformed terminal resize payloads without resizing', (payload) => {
+    const sender = { id: 1, send: vi.fn(), isDestroyed: () => false };
+    ipc.send(E_IPCChannels.CONTAINERS_TERMINAL_RESIZE, payload, sender);
+    expect(service.resizeTerminal).not.toHaveBeenCalled();
+    expect(sender.send).toHaveBeenCalledWith(
+      E_OnIPCChannels.CONTAINERS_TERMINAL_ERROR,
+      expect.objectContaining({ message: expect.any(String) }),
+    );
+  });
+
+  it('validates input and resize fields even for an active owned session', async () => {
+    const sender = { id: 1, send: vi.fn(), isDestroyed: () => false };
+    const started = await ipc.invoke(
+      E_IPCChannels.CONTAINERS_TERMINAL_START,
+      { id: 'abc', cols: 80, rows: 24 },
+      sender,
+    );
+    const { sessionId } = started.data;
+    ipc.send(E_IPCChannels.CONTAINERS_TERMINAL_INPUT, { sessionId, data: 42 }, sender);
+    ipc.send(E_IPCChannels.CONTAINERS_TERMINAL_RESIZE, { sessionId, cols: 0, rows: 24 }, sender);
+    expect(service.writeTerminal).not.toHaveBeenCalled();
+    expect(service.resizeTerminal).not.toHaveBeenCalled();
+    expect(sender.send).toHaveBeenCalledWith(
+      E_OnIPCChannels.CONTAINERS_TERMINAL_ERROR,
+      expect.objectContaining({ sessionId }),
+    );
   });
 });
