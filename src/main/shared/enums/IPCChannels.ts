@@ -2,6 +2,12 @@ export enum E_IPCChannels {
   CONTAINERS_LIST = 'containers:list',
   CONTAINERS_START = 'containers:start',
   CONTAINERS_STOP = 'containers:stop',
+  CONTAINERS_LOGS_START = 'containers:logs:start',
+  CONTAINERS_LOGS_STOP = 'containers:logs:stop',
+  CONTAINERS_TERMINAL_START = 'containers:terminal:start',
+  CONTAINERS_TERMINAL_INPUT = 'containers:terminal:input',
+  CONTAINERS_TERMINAL_RESIZE = 'containers:terminal:resize',
+  CONTAINERS_TERMINAL_STOP = 'containers:terminal:stop',
   CONTAINERS_OPEN_COMPOSE_FOLDER = 'containers:open-compose-folder',
   CREDENTIALS_GET = 'credentials:get',
   CREDENTIALS_SAVE = 'credentials:save',
@@ -16,5 +22,11 @@ export enum E_IPCChannels {
 
 export enum E_OnIPCChannels {
   CONTAINERS_UPDATED = 'containers:updated',
+  CONTAINERS_LOGS_DATA = 'containers:logs:data',
+  CONTAINERS_LOGS_ENDED = 'containers:logs:ended',
+  CONTAINERS_LOGS_ERROR = 'containers:logs:error',
+  CONTAINERS_TERMINAL_DATA = 'containers:terminal:data',
+  CONTAINERS_TERMINAL_EXIT = 'containers:terminal:exit',
+  CONTAINERS_TERMINAL_ERROR = 'containers:terminal:error',
   APP_UPDATE_STATE_CHANGED = 'app:update:state-changed',
 }

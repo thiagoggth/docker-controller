@@ -1,5 +1,7 @@
 import { ContainerActionError } from '@core/domain/errors/ContainerActionError';
 import { ContainerNotFoundError } from '@core/domain/errors/ContainerNotFoundError';
+import { ContainerNotRunningError } from '@core/domain/errors/ContainerNotRunningError';
+import { ContainerStreamError } from '@core/domain/errors/ContainerStreamError';
 import { CredentialStorageError } from '@core/domain/errors/CredentialStorageError';
 import { DockerDaemonUnavailableError } from '@core/domain/errors/DockerDaemonUnavailableError';
 import { DomainError } from '@core/domain/errors/DomainError';
@@ -12,6 +14,14 @@ export function mapErrorToReports(error: unknown): Report[] {
 
   if (error instanceof ContainerActionError) {
     return [{ propName: error.action, message: error.message }];
+  }
+
+  if (error instanceof ContainerNotRunningError) {
+    return [{ propName: 'container', message: error.message }];
+  }
+
+  if (error instanceof ContainerStreamError) {
+    return [{ propName: 'container-stream', message: error.message }];
   }
 
   if (error instanceof DockerDaemonUnavailableError) {
