@@ -64,16 +64,20 @@ const createDocker = ({
   running = true,
   logsError,
   execError,
+  resizeError,
 }: {
   stream?: PassThrough | TestDuplex;
   tty?: boolean;
   running?: boolean;
   logsError?: Error;
   execError?: Error;
+  resizeError?: Error;
 } = {}) => {
   const exec = {
     start: vi.fn().mockResolvedValue(stream),
-    resize: vi.fn().mockResolvedValue(undefined),
+    resize: vi.fn().mockImplementation(async () => {
+      if (resizeError) throw resizeError;
+    }),
   };
   const container = {
     inspect: vi.fn().mockResolvedValue({
@@ -91,10 +95,17 @@ const createDocker = ({
   };
   const modem = {
     demuxStream: vi.fn((source: PassThrough, stdout: Writable, stderr: Writable) => {
-      source.on('data', (frame: Buffer) => {
-        const length = frame.readUInt32BE(4);
-        const target = frame[0] === 2 ? stderr : stdout;
-        target.write(frame.subarray(8, 8 + length));
+      let buffered = Buffer.alloc(0);
+      source.on('data', (chunk: Buffer) => {
+        buffered = Buffer.concat([buffered, chunk]);
+        while (buffered.length >= 8) {
+          const length = buffered.readUInt32BE(4);
+          if (buffered.length < 8 + length) return;
+
+          const target = buffered[0] === 2 ? stderr : stdout;
+          target.write(buffered.subarray(8, 8 + length));
+          buffered = buffered.subarray(8 + length);
+        }
       });
     }),
   };
@@ -136,15 +147,18 @@ describe('DockerodeContainerStreamService', () => {
     expect(sink.closeCalls).toBe(1);
   });
 
-  it('forwards ordered stdout and stderr log frame payloads through one sink', async () => {
+  it('forwards ordered stdout and stderr payloads when Docker frames arrive in chunks', async () => {
     const stream = new PassThrough();
     const fake = createDocker({ stream });
     const service = createService(fake);
     const sink = callbacks();
 
     await service.startLogs('logs-1', 'container-1', sink);
-    stream.write(dockerFrame(1, 'stdout\n'));
-    stream.write(dockerFrame(2, 'stderr\n'));
+    const frames = Buffer.concat([dockerFrame(1, 'stdout\n'), dockerFrame(2, 'stderr\n')]);
+    stream.write(frames.subarray(0, 3));
+    stream.write(frames.subarray(3, 12));
+    stream.write(frames.subarray(12, 17));
+    stream.write(frames.subarray(17));
 
     expect(fake.modem.demuxStream).toHaveBeenCalledTimes(1);
     expect(fake.modem.demuxStream.mock.calls[0][1]).toBe(fake.modem.demuxStream.mock.calls[0][2]);
@@ -186,6 +200,42 @@ describe('DockerodeContainerStreamService', () => {
     expect(fake.exec.resize).toHaveBeenCalledWith({ h: 24, w: 80 });
     expect(Buffer.concat(stream.writes).toString()).toBe('ls\n');
     expect(fake.exec.resize).toHaveBeenLastCalledWith({ h: 40, w: 120 });
+  });
+
+  it('destroys the terminal stream and leaves no session when initial resize fails', async () => {
+    const stream = new TestDuplex();
+    const fake = createDocker({ stream, resizeError: new Error('resize failed') });
+    const service = createService(fake);
+
+    await expect(
+      service.startTerminal('term-1', 'container-1', 80, 24, callbacks()),
+    ).rejects.toThrow('resize failed');
+
+    expect(stream.destroyCalls).toBe(1);
+    await expect(service.stop('term-1')).rejects.toBeInstanceOf(ContainerStreamError);
+  });
+
+  it('destroys a duplicate stream while preserving the original session', async () => {
+    const originalStream = new PassThrough();
+    const duplicateStream = new TestDuplex();
+    const original = createDocker({ stream: originalStream, tty: true });
+    const duplicate = createDocker({ stream: duplicateStream, tty: true });
+    let activeDocker = original.docker;
+    const service = new DockerodeContainerStreamService({
+      getDocker: () => activeDocker,
+    } as unknown as DockerodeService);
+    const originalSink = callbacks();
+
+    await service.startLogs('logs-1', 'container-1', originalSink);
+    activeDocker = duplicate.docker;
+
+    await expect(service.startLogs('logs-1', 'container-2', callbacks())).rejects.toBeInstanceOf(
+      ContainerStreamError,
+    );
+    originalStream.write('still active\n');
+
+    expect(duplicateStream.destroyCalls).toBe(1);
+    expect(originalSink.data).toEqual(['still active\n']);
   });
 
   it('rejects terminal creation for a stopped container', async () => {

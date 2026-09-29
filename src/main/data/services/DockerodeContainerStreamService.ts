@@ -61,6 +61,7 @@ export class DockerodeContainerStreamService implements IContainerStreamService 
     rows: number,
     callbacks: ContainerStreamCallbacks,
   ): Promise<void> {
+    let stream: Duplex | undefined;
     try {
       const container = this.dockerodeService.getDocker().getContainer(containerId);
       const inspection = await container.inspect();
@@ -76,11 +77,16 @@ export class DockerodeContainerStreamService implements IContainerStreamService 
         AttachStderr: true,
         Tty: true,
       });
-      const stream = await exec.start({ hijack: true, stdin: true });
+      stream = await exec.start({ hijack: true, stdin: true });
 
       this.addSession(sessionId, stream, callbacks, exec);
       await exec.resize({ h: rows, w: cols });
     } catch (error) {
+      const session = stream && this.sessions.get(sessionId);
+      if (stream && session?.stream === stream) {
+        session.finalize();
+        stream.destroy();
+      }
       throw this.toStreamError(error, containerId);
     }
   }
@@ -116,7 +122,11 @@ export class DockerodeContainerStreamService implements IContainerStreamService 
     exec?: Dockerode.Exec,
     forwardData = true,
   ): void {
-    if (this.sessions.has(sessionId)) {
+    const existingSession = this.sessions.get(sessionId);
+    if (existingSession) {
+      if (existingSession.stream !== stream) {
+        stream.destroy();
+      }
       throw new ContainerStreamError(`Container stream session already exists: ${sessionId}`);
     }
 
