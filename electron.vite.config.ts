@@ -40,5 +40,25 @@ export default defineConfig({
       },
     },
     plugins: [tailwindcss(), react()],
+    server: {
+      watch: {
+        usePolling: true,
+        interval: 500,
+        ignored: [
+          '**/.git/**',
+          '**/.vscode/**',
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/out/**',
+          '**/build/**',
+          '**/build-electron/**',
+          '**/plugins/**',
+          '**/coverage/**',
+          '**/docs/**',
+          '**/enviroments.db',
+          '**/tsconfig.electron.tsbuildinfo',
+        ],
+      },
+    },
   },
 });
